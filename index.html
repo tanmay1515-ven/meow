@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +6,9 @@
 <title>Meow's Little World 🐾</title>
 
 <style>
-* { box-sizing: border-box; }
+* {
+    box-sizing: border-box;
+}
 
 body {
     margin: 0;
@@ -237,24 +238,138 @@ const speech = document.getElementById("speech");
 // DISCORD NOTIFICATION CONFIGURATION
 // =====================================
 
-// Paste your Discord webhook URL here later
 const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1530494544137818223/08o5UbcjjxXuhOXDyeByfuce6ZVSzuo7T1FMnjnxLpdZ-xTJtTxi85Pk3TvRG401qG5G";
 
-function sendDiscordLog(message) {
-  if (!DISCORD_WEBHOOK_URL) return;
-  fetch(DISCORD_WEBHOOK_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      content: `🔔 **[Portal Activity]** ${message} *(at ${new Date().toLocaleTimeString()})*`
-    })
-  }).catch((err) => console.log("Webhook silent fail:", err));
+// =====================================
+// SESSION ID
+// =====================================
+
+function createSessionID() {
+    return "MEOW-" + Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
-// Send immediate alert when page opens
+let sessionID = sessionStorage.getItem("meowSessionID");
+
+if (!sessionID) {
+    sessionID = createSessionID();
+    sessionStorage.setItem("meowSessionID", sessionID);
+}
+
+// =====================================
+// IST TIMESTAMP
+// =====================================
+
+function getISTTime() {
+    return new Intl.DateTimeFormat("en-IN", {
+        timeZone: "Asia/Kolkata",
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true
+    }).format(new Date()) + " IST";
+}
+
+// =====================================
+// DEVICE INFORMATION
+// =====================================
+
+function getDeviceInfo() {
+
+    const ua = navigator.userAgent;
+
+    let deviceType = "Desktop";
+    let os = "Unknown";
+    let browser = "Unknown";
+
+    if (/iPad|Tablet/i.test(ua)) {
+        deviceType = "Tablet";
+    } else if (/Mobi|Android/i.test(ua)) {
+        deviceType = "Mobile";
+    }
+
+    if (/iPhone|iPad|iPod/i.test(ua)) {
+        os = "iOS / iPadOS";
+    } else if (/Android/i.test(ua)) {
+        os = "Android";
+    } else if (/Windows/i.test(ua)) {
+        os = "Windows";
+    } else if (/Macintosh|Mac OS X/i.test(ua)) {
+        os = "macOS";
+    } else if (/Linux/i.test(ua)) {
+        os = "Linux";
+    }
+
+    if (/Edg/i.test(ua)) {
+        browser = "Microsoft Edge";
+    } else if (/OPR|Opera/i.test(ua)) {
+        browser = "Opera";
+    } else if (/Firefox/i.test(ua)) {
+        browser = "Firefox";
+    } else if (/CriOS/i.test(ua)) {
+        browser = "Chrome (iOS)";
+    } else if (/Chrome/i.test(ua)) {
+        browser = "Chrome";
+    } else if (/Safari/i.test(ua)) {
+        browser = "Safari";
+    }
+
+    return {
+        deviceType: deviceType,
+        os: os,
+        browser: browser,
+        screen: `${screen.width} x ${screen.height}`,
+        language: navigator.language,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+    };
+}
+
+// =====================================
+// DISCORD LOG FUNCTION
+// =====================================
+
+function sendDiscordLog(message) {
+
+    if (!DISCORD_WEBHOOK_URL) return;
+
+    const device = getDeviceInfo();
+
+    const notification = `
+🔔 **[Meow's World - Activity]**
+
+📌 **Activity:** ${message}
+
+🕒 **Time:** ${getISTTime()}
+
+🆔 **Session ID:** ${sessionID}
+
+📱 **Device Type:** ${device.deviceType}
+💻 **Operating System:** ${device.os}
+🌐 **Browser:** ${device.browser}
+
+📐 **Screen Resolution:** ${device.screen}
+🗣️ **Language:** ${device.language}
+🌍 **Timezone:** ${device.timezone}
+`;
+
+    fetch(DISCORD_WEBHOOK_URL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            content: notification
+        })
+    }).catch((err) => console.log("Webhook silent fail:", err));
+}
+
+// =====================================
+// PAGE OPEN NOTIFICATION
+// =====================================
+
 sendDiscordLog("🌐 Someone opened the meow link!");
-
-
 
 // =====================================
 // MEOW GAME FUNCTIONS
