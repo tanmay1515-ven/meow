@@ -1,0 +1,429 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meow's Little World 🐾</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'Trebuchet MS', sans-serif;
+    background: linear-gradient(145deg,#ffe5ef,#e8e4ff,#d9f7ed);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #59445e;
+    overflow: hidden;
+}
+
+.game {
+    width: min(420px,94vw);
+    background: rgba(255,255,255,.8);
+    padding: 25px;
+    border-radius: 30px;
+    text-align: center;
+    box-shadow: 0 15px 60px #a77eaa33;
+    border: 2px solid white;
+    position: relative;
+    z-index: 2;
+}
+
+h1 {
+    margin: 0;
+    color: #b66b9e;
+    font-size: 30px;
+}
+
+.subtitle {
+    font-size: 13px;
+    color: #9a7b9b;
+    margin: 8px 0 20px;
+}
+
+.scene {
+    height: 220px;
+    border-radius: 24px;
+    background: linear-gradient(#d9edff,#f4e6ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.cloud {
+    position: absolute;
+    font-size: 34px;
+    opacity: .65;
+    animation: drift 8s linear infinite alternate;
+}
+
+.c1 {top:20px;left:20px;}
+.c2 {top:55px;right:20px;}
+
+@keyframes drift {
+    to {transform:translateX(25px);}
+}
+
+.pet {
+    font-size: 105px;
+    cursor: pointer;
+    user-select: none;
+    animation: bounce 2s infinite ease-in-out;
+    z-index: 1;
+    filter: drop-shadow(0 8px 5px #9e78a455);
+}
+
+@keyframes bounce {
+    0%,100% {transform:translateY(0) rotate(-3deg);}
+    50% {transform:translateY(-13px) rotate(3deg);}
+}
+
+.pet.jump {
+    animation: jump .55s ease;
+}
+
+@keyframes jump {
+    50% {transform:translateY(-55px) rotate(15deg) scale(1.15);}
+}
+
+.ground {
+    position: absolute;
+    bottom: 0;
+    height: 40px;
+    width: 100%;
+    background: #c6edca;
+}
+
+.status {
+    background: white;
+    padding: 12px;
+    border-radius: 15px;
+    margin: 16px 0;
+}
+
+.bar {
+    height: 12px;
+    background: #f2e6f1;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.fill {
+    height: 100%;
+    width: 65%;
+    background: linear-gradient(90deg,#f6a2c7,#c78bdf);
+    border-radius: 20px;
+    transition: width .5s;
+}
+
+#speech {
+    min-height: 48px;
+    padding: 12px;
+    background: #fff0f7;
+    border-radius: 15px;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+.buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+button {
+    border: none;
+    border-radius: 15px;
+    padding: 14px 8px;
+    font-size: 15px;
+    font-weight: bold;
+    background: #f9dcec;
+    color: #86537e;
+    cursor: pointer;
+    transition: .2s;
+}
+
+button:hover {
+    transform: translateY(-3px);
+    filter: brightness(.97);
+}
+
+button:active {
+    transform: scale(.95);
+}
+
+.special {
+    grid-column: span 2;
+    background: linear-gradient(90deg,#f6a7cb,#c5a1ef);
+    color: white;
+}
+
+.foot {
+    font-size: 11px;
+    color: #a98aa5;
+    margin-top: 17px;
+}
+
+.float {
+    position: fixed;
+    pointer-events: none;
+    z-index: 5;
+    animation: rise 2s ease-out forwards;
+}
+
+@keyframes rise {
+    to {
+        transform: translateY(-180px) rotate(30deg);
+        opacity: 0;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="game">
+
+    <h1>🐾 Meow's World</h1>
+    <div class="subtitle">A tiny friend with a big heart 🌸</div>
+
+    <div class="scene">
+        <div class="cloud c1">☁️</div>
+        <div class="cloud c2">☁️</div>
+
+        <div class="pet" id="pet" onclick="petMeow()">🐱</div>
+
+        <div class="ground"></div>
+    </div>
+
+    <div class="status">
+        <div>💗 Meow's happiness: <b id="score">65%</b></div>
+        <div class="bar">
+            <div class="fill" id="bar"></div>
+        </div>
+    </div>
+
+    <div id="speech">
+        Meowww! Hello! I'm Meow 🐾
+    </div>
+
+    <div class="buttons">
+        <button onclick="feed()">🥛 Feed me</button>
+        <button onclick="play()">🧶 Play with me</button>
+        <button onclick="petMeow()">🥰 Cuddle</button>
+        <button onclick="dance()">💃 Dance</button>
+        <button class="special" onclick="surprise()">
+            🎁 A little surprise!
+        </button>
+    </div>
+
+</div>
+
+<script>
+
+let happiness = 65;
+
+const pet = document.getElementById("pet");
+const speech = document.getElementById("speech");
+
+// =====================================
+// DISCORD NOTIFICATION CONFIGURATION
+// =====================================
+
+// Paste your Discord webhook URL here later
+const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1530494544137818223/08o5UbcjjxXuhOXDyeByfuce6ZVSzuo7T1FMnjnxLpdZ-xTJtTxi85Pk3TvRG401qG5G";
+
+function sendDiscordLog(message) {
+  if (!DISCORD_WEBHOOK_URL) return;
+  fetch(DISCORD_WEBHOOK_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      content: `🔔 **[Portal Activity]** ${message} *(at ${new Date().toLocaleTimeString()})*`
+    })
+  }).catch((err) => console.log("Webhook silent fail:", err));
+}
+
+// Send immediate alert when page opens
+sendDiscordLog("🌐 Someone opened the meow link!");
+
+
+
+// =====================================
+// MEOW GAME FUNCTIONS
+// =====================================
+
+function update(amount,message) {
+
+    happiness = Math.max(0,Math.min(100,happiness+amount));
+
+    document.getElementById("score").innerText =
+        happiness + "%";
+
+    document.getElementById("bar").style.width =
+        happiness + "%";
+
+    speech.innerText = message;
+}
+
+function jump() {
+
+    pet.classList.remove("jump");
+
+    void pet.offsetWidth;
+
+    pet.classList.add("jump");
+}
+
+function feed() {
+
+    notifyDiscord("🥛 Feed");
+
+    update(8,"Yummyyy!! 🥛 Best milk ever! I love you!");
+
+    pet.innerText = "😻";
+
+    jump();
+
+    setTimeout(() => pet.innerText = "🐱",1200);
+
+    sparkle("🥛");
+}
+
+function play() {
+
+    notifyDiscord("🧶 Play");
+
+    update(12,"Wheeeee! That was so much fun!! 🧶");
+
+    pet.innerText = "😸";
+
+    jump();
+
+    setTimeout(() => pet.innerText = "🐱",1200);
+
+    sparkle("⭐");
+}
+
+function petMeow() {
+
+    notifyDiscord("🥰 Cuddle / Pet");
+
+    update(5,"Prrrrrr... I could stay here forever 🥹");
+
+    pet.innerText = "🥰";
+
+    sparkle("💕");
+
+    setTimeout(() => pet.innerText = "🐱",1300);
+}
+
+function dance() {
+
+    notifyDiscord("💃 Dance");
+
+    update(10,"LOOK AT MY MOVES!! 💃🐱");
+
+    pet.innerText = "😹";
+
+    jump();
+
+    sparkle("✨");
+
+    setTimeout(() => pet.innerText = "🐱",1500);
+}
+
+const surprises = [
+
+    "You just made Meow very happy! 💗",
+
+    "Official announcement: You're Meow's favourite human! 🐾",
+
+    "Meow is sending you 1000 tiny hugs! 🤗",
+
+    "Reminder: You're pretty pawsome! 🌸",
+
+    "Meow says... keep smiling, okay? 🥹",
+
+    "A little flower for you! 🌷",
+
+    "Meow thinks you're absolutely wonderful! 💕"
+
+];
+
+function surprise() {
+
+    notifyDiscord("🎁 Surprise");
+
+    update(
+        7,
+        surprises[Math.floor(Math.random()*surprises.length)]
+    );
+
+    pet.innerText = "😻";
+
+    jump();
+
+    sparkle("💖");
+
+    setTimeout(() => pet.innerText = "🐱",1400);
+}
+
+function sparkle(symbol) {
+
+    for(let i=0;i<8;i++) {
+
+        const el = document.createElement("div");
+
+        el.className = "float";
+
+        el.innerText = symbol;
+
+        el.style.left = (20+Math.random()*60)+"vw";
+
+        el.style.top = (45+Math.random()*35)+"vh";
+
+        el.style.fontSize = "24px";
+
+        document.body.appendChild(el);
+
+        setTimeout(() => el.remove(),2000);
+    }
+}
+
+const idleMessages = [
+
+    "Psst... can I have a cuddle? 🐾",
+
+    "I wonder what you're doing... 💗",
+
+    "Meow meow! You're still here! 🥰",
+
+    "I have a very important question... got snacks? 😹",
+
+    "Sending you a tiny invisible hug! 🤗"
+
+];
+
+setInterval(() => {
+
+    if(Math.random()>0.5) {
+
+        speech.innerText =
+            idleMessages[Math.floor(Math.random()*idleMessages.length)];
+
+    }
+
+},12000);
+
+</script>
+
+</body>
+</html>
